@@ -5,6 +5,9 @@ var gameState = PLAY;
 var trex, trex_running, trex_collided;
 var ground, invisibleGround, groundImage;
 
+var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var randomLetter;
+
 var cloudsGroup, cloudImage;
 var obstaclesGroup, obstacle1, obstacle2, obstacle3, obstacle4;
 var backgroundImg
@@ -110,6 +113,12 @@ function draw() {
     spawnObstacles();
   
     if(obstaclesGroup.isTouching(trex)){
+       if (randomLetter) {
+        // Display the letter at the bottom
+        textSize(30);
+        fill("black");
+        text("Letter: " + randomLetter, width / 2, height - 20);
+      }
         collidedSound.play()
         gameState = END;
     }
@@ -165,32 +174,38 @@ function spawnClouds() {
 
 function spawnObstacles() {
   if(frameCount % 60 === 0) {
-    var obstacle = createSprite(600,height-95,20,30);
-    obstacle.setCollider('circle',0,0,45)
-    // obstacle.debug = true
-  
-    obstacle.velocityX = -(6 + 3*score/100);
-    
-    //generate random obstacles
-    var rand = Math.round(random(1,2));
-    switch(rand) {
-      case 1: obstacle.addImage(obstacle1);
-              break;
-      case 2: obstacle.addImage(obstacle2);
-              break;
-      default: break;
+    var obstacle;
+
+    // 80% chance of obstacle being a letter
+    if (random(1) > 0.2) {
+      obstacle = createSprite(600, height - 95, 20, 30);
+      obstacle.addImage(getRandomLetterImage());
+      randomLetter = getRandomLetter();
+    } else {
+      obstacle = createSprite(600, height - 95, 20, 30);
+      var rand = Math.round(random(1, 2));
+      switch(rand) {
+        case 1: obstacle.addImage(obstacle1);
+                break;
+        case 2: obstacle.addImage(obstacle2);
+                break;
+        default: break;
+      }
     }
-    
-    //assign scale and lifetime to the obstacle           
+
+    obstacle.setCollider('circle', 0, 0, 45);
+    obstacle.velocityX = -(6 + 3 * score / 100);
     obstacle.scale = 0.3;
     obstacle.lifetime = 300;
     obstacle.depth = trex.depth;
-    trex.depth +=1;
-    //add each obstacle to the group
+    trex.depth += 1;
+
     obstaclesGroup.add(obstacle);
   }
 }
-
+function getRandomLetter() {
+  return alphabet[Math.floor(Math.random() * alphabet.length)];
+}
 function reset(){
   gameState = PLAY;
   gameOver.visible = false;
